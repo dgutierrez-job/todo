@@ -1,28 +1,44 @@
 require 'json'
 
 class Todo
-  def initialize(file)
-    @file = file
+  def initialize(tasks)
+    @tasks = tasks
   end
 
-  def read
-    @file.list_tasks
+  def list_tasks
+    JSON.parse File.read(@tasks)
   end
 
   def find_task(id)
-    @file.find_task id
+    list_tasks.find { |task| task['id'] == id }
   end
 
   def delete_task(id)
-    @file.delete_task id
+    data = list_tasks
+    task_to_delete = find_task id
+    data.delete task_to_delete
+    File.write @tasks, JSON.generate(data)
   end
 
   def create_task(id, title, **attributes)
-    @file.create_task(id, title, **attributes)
+    data = list_tasks
+
+    new_task = {
+      'id' => id,
+      'title' => title,
+    }.merge(attributes)
+
+    data.push new_task
+    File.write @tasks, JSON.generate(data)
   end
 
-  def update(id, **attributes)
-    @file.edit_task(id, **attributes)
+  def edit_task(id, **attributes)
+    data = list_tasks
+    task_to_edit = find_task id
+    return unless task_to_edit
+
+    data[data.index(task_to_edit)] = task_to_edit.merge attributes
+    File.write @tasks, JSON.generate(data)
   end
 end
 
