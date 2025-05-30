@@ -6,7 +6,7 @@ class Todo
   end
 
   def list_tasks
-    JSON.parse File.read(@tasks)
+    @tasks.read_file
   end
 
   def find_task(id)
@@ -17,7 +17,8 @@ class Todo
     data = list_tasks
     task_to_delete = find_task id
     data.delete task_to_delete
-    File.write @tasks, JSON.generate(data)
+    @tasks.write_file data
+    task_to_delete
   end
 
   def create_task(id, title, **attributes)
@@ -29,7 +30,8 @@ class Todo
     }.merge(attributes)
 
     data.push new_task
-    File.write @tasks, JSON.generate(data)
+    @tasks.write_file data
+    new_task
   end
 
   def edit_task(id, **attributes)
@@ -38,7 +40,8 @@ class Todo
     return unless task_to_edit
 
     data[data.index(task_to_edit)] = task_to_edit.merge attributes
-    File.write @tasks, JSON.generate(data)
+    @tasks.write_file data
+    task_to_edit.merge attributes
   end
 end
 
@@ -70,11 +73,13 @@ class MockFile
   end
 end
 
-mock_file = MockFile.new []
-task = Todo.new mock_file
-task.create_task '1', 'Título 1', 'Description' => 'Una descrición'
-task.create_task '2', 'Título 2', 'Description' => 'Otra descripción'
-# task.delete_task '1'
+file = MockFile.new []
+tasks = Todo.new file
+tasks.create_task '1', 'Título 1', 'Description' => 'Una descrición'
+puts tasks.create_task '2', 'Título 2', 'Description' => 'Otra descripción'
+# tasks.edit_task '1', 'title' => 'nuevo título'
+# puts tasks.list_tasks
+# tasks.delete_task '2'
 
 # task.delete_task '02bfe74-5e9e-48e9-9e23-7fdb5aeaa4ab'
 # task.create_task
