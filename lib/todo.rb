@@ -10,7 +10,7 @@ class Todo
   end
 
   def find_task(id)
-    list_tasks.find { |task| task['id'] == id }
+    list_tasks.find { |task| task[:id] == id }
   end
 
   def delete_task(id)
@@ -25,8 +25,8 @@ class Todo
     data = list_tasks
 
     new_task = {
-      'id' => id,
-      'title' => title,
+      id: id,
+      title: title,
     }.merge(attributes)
 
     data.push new_task
@@ -73,14 +73,21 @@ class MockFile
   end
 end
 
-file = MockFile.new []
-tasks = Todo.new file
-tasks.create_task '1', 'Título 1', 'Description' => 'Una descrición'
-puts tasks.create_task '2', 'Título 2', 'Description' => 'Otra descripción'
-# tasks.edit_task '1', 'title' => 'nuevo título'
-# puts tasks.list_tasks
-# tasks.delete_task '2'
+# new_file = MockFile.new([
+#  {
+#    id: '0',
+#    title: 'wake up',
+#    description: 'just open your eyes and start the day',
+#    done: true,
+#  },
+#  {
+#    id: '1',
+#    title: 'prepare coffe and drink it',
+#    description: 'we need some energy to start the day',
+#    done: true,
+#  },
+# ])
 
-# task.delete_task '02bfe74-5e9e-48e9-9e23-7fdb5aeaa4ab'
-# task.create_task
-# task.update 'a9cf94eb-0f55-40c8-8888-9d2be6830798', 'title' => 'nuevo titulo', 'description' => 'una nueva descripcion'
+# tasks = Todo.new new_file
+# puts tasks.list_tasks
+# puts tasks.find_task('0')
