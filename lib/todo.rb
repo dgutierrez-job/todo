@@ -43,81 +43,30 @@ class Todo
 end
 
 class JSONFile
-  def initialize(tasks)
-    @tasks = tasks
+  def initialize(file)
+    @file = file
   end
 
-  def list_tasks
-    JSON.parse File.read(@tasks)
+  def read_file
+    JSON.parse File.read(@file)
   end
 
-  def find_task(id)
-    list_tasks.find { |task| task['id'] == id }
-  end
-
-  def delete_task(id)
-    data = list_tasks
-    task_to_delete = find_task id
-    data.delete task_to_delete
-    File.write @tasks, JSON.generate(data)
-  end
-
-  def create_task(id, title, **attributes)
-    data = list_tasks
-
-    new_task = {
-      'id' => id,
-      'title' => title,
-    }.merge(attributes)
-
-    data.push new_task
-    File.write @tasks, JSON.generate(data)
-  end
-
-  def edit_task(id, **attributes)
-    data = list_tasks
-    task_to_edit = find_task id
-    return unless task_to_edit
-
-    data[data.index(task_to_edit)] = task_to_edit.merge attributes
-    File.write @tasks, JSON.generate(data)
+  def write_file(data)
+    File.write @file, JSON.generate(data)
   end
 end
 
 class MockFile
-  def initialize(tasks)
-    @tasks = tasks
+  def initialize(file)
+    @file = file
   end
 
-  def list_tasks
-    @tasks
+  def read_file
+    @file
   end
 
-  def find_task(id)
-    list_tasks.find { |task| task['id'] == id }
-  end
-
-  def delete_task(id)
-    task_to_delete = find_task id
-    data = @tasks.delete task_to_delete
-    @tasks = data
-  end
-
-  def create_task(id, title, **attributes)
-    new_task = {
-      'id' => id,
-      'title' => title,
-    }.merge(attributes)
-
-    @tasks.push new_task
-  end
-
-  def edit_task(id, **attributes)
-    data = list_tasks
-    task_to_edit = find_task id
-    return unless task_to_edit
-
-    data[data.index(task_to_edit)] = task_to_edit.merge attributes
+  def write_file(data)
+    @file = data
   end
 end
 
