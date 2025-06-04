@@ -1,21 +1,22 @@
 RSpec.describe Todo do
-  new_file = MockFile.new([
-    {
-      id: '0',
-      title: 'wake up',
-      description: 'just open your eyes and start the day',
-      done: true,
-    },
-    {
-      id: '1',
-      title: 'prepare coffe and drink it',
-      description: 'we need some energy to start the day',
-      done: true,
-    },
-  ])
-
   let(:todo) { Todo }
-  let(:file) { new_file }
+  let :file do
+    MockFile.new([
+      {
+        id: '0',
+        title: 'wake up',
+        description: 'just open your eyes and start the day',
+        done: true,
+      },
+      {
+        id: '1',
+        title: 'prepare coffe and drink it',
+        description: 'we need some energy to start the day',
+        done: true,
+      },
+
+    ])
+  end
   let(:tasks) { todo.new file }
 
   describe '.list_tasks ' do
@@ -44,7 +45,7 @@ RSpec.describe Todo do
   end
 
   describe '.delete_task' do
-    let(:id) { '0' }
+    let(:id) { '1' }
     let(:result) { tasks.delete_task id }
 
     it 'deletes a desired task' do
@@ -62,31 +63,28 @@ RSpec.describe Todo do
   end
 
   describe '.create_task' do
-    let(:id) { '2' }
     let(:title) { 'programar' }
-    let(:description) { 'un dia mas ' }
-    let(:status) { true }
-    let(:result) { tasks.create_task id, title }
+    let(:attributes) { { done: true, description: 'un dia mas' } }
+    # let(:description) { 'un dia mas ' }
+    # let(:status) { true }
+    let(:result) { tasks.create_task(title, **attributes) }
 
     it 'creates a new task' do
       expect(result).to be_a(Hash)
-      expect(result[:id]).to eq(id)
-      # expect(result['title']).to eq(title)
-      # expect(result[:description]).to eq(description)
-      # expect(result['status']).to eq(status)
+      expect(result[:title]).to eq(title)
+      expect(result).to include(attributes)
     end
   end
 
   describe '.edit_task' do
-    let(:id) { '1' }
-    # let(:title) { 'jugar' }
-    # let(:description) { 'un día de chill' }
-    # let(:status) { false }
-    let(:result) { tasks.edit_task id }
+    let(:id) { '0' }
+    let(:attributes) { { title: 'jugar', description: 'un día chill', done: false } }
+    let(:result) { tasks.edit_task(id, **attributes) }
 
     it 'edit an existing task' do
       expect(result).to be_a(Hash)
       expect(result[:id]).to eq(id)
+      expect(result).to include(attributes)
       # expect(result[:title]).to eq(title)
       # expect(result['description']).to eq(description)
       # expect(result['status']).to eq(status)

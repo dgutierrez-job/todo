@@ -1,4 +1,6 @@
 require 'json'
+require 'csv'
+require 'securerandom'
 
 class Todo
   def initialize(tasks)
@@ -21,14 +23,12 @@ class Todo
     task_to_delete
   end
 
-  def create_task(id, title, **attributes)
+  def create_task(title, **attributes)
+    raise 'Title is required' if !title.is_a?(String) || title.empty?
+
     data = list_tasks
 
-    new_task = {
-      id: id,
-      title: title,
-    }.merge(attributes)
-
+    new_task = { done: false }.merge(attributes).merge({ id: SecureRandom.uuid, title: title })
     data.push new_task
     @tasks.write_file data
     new_task
@@ -51,7 +51,7 @@ class JSONFile
   end
 
   def read_file
-    JSON.parse File.read(@file)
+    JSON.parse(File.read(@file), { symbolize_names: true })
   end
 
   def write_file(data)
@@ -59,9 +59,37 @@ class JSONFile
   end
 end
 
-class MockFile
+class CSVFile
   def initialize(file)
     @file = file
+  end
+
+  def read_file
+    tasks = []
+    CSV.foreach @file, headers: true, header_converters: :symbol do |row|
+      task = row.to_h
+      task[:done] = task[:done] == 'true' if task.key? :done
+      tasks << task
+    end
+
+    tasks
+  end
+
+  def write_file(_data)
+    headers = tasks.first&.keys
+    return if headers.nil?
+
+    CSV.open @file, 'w', write_headers: true, headers: headers do |csv|
+      tasks.each do |task|
+        csv << headers.map { |header| task[header] }
+      end
+    end
+  end
+end
+
+class MockFile
+  def initialize(file = [])
+    @file = file || []
   end
 
   def read_file
@@ -74,18 +102,16 @@ class MockFile
 end
 
 # new_file = MockFile.new([
-#  {
-#    id: '0',
+#  [ #    id: '0',
 #    title: 'wake up',
 #    description: 'just open your eyes and start the day',
 #    done: true,
-#  },
-#  {
-#    id: '1',
+# ],
+#  [ #    id: '1',
 #    title: 'prepare coffe and drink it',
 #    description: 'we need some energy to start the day',
 #    done: true,
-#  },
+# ],
 # ])
 
 # tasks = Todo.new new_file
