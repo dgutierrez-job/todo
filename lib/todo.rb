@@ -24,7 +24,7 @@ class Todo
   end
 
   def create_task(title, **attributes)
-    raise 'Title is required' if !title.is_a?(String) || title.empty?
+    raise TodoError.new('Title is required') if !title.is_a?(String) || title.empty?
 
     data = list_tasks
 
@@ -52,10 +52,20 @@ class JSONFile
 
   def read_file
     JSON.parse(File.read(@file), { symbolize_names: true })
+  rescue Errno::ENOENT
+    raise TodoFileReadError.new("Unable to open #{@file} file. No such file.")
+  rescue Errno::EACCES
+    raise TodoFileReadError.new("Unable to read #{@file}. No permissions.")
+  rescue JSON::ParserError
+    raise TodoFileReadError.new("JSON malformed on #{@file} file")
   end
 
   def write_file(data)
     File.write @file, JSON.generate(data)
+  rescue Errno::ENOENT
+    raise TodoFileReadError.new("Unable to open #{@file} file. No such file.")
+  rescue Errno::EACCES
+    raise TodoFileReadError.new("Unable to write in #{@file}. No permissions")
   end
 end
 
@@ -66,6 +76,7 @@ class CSVFile
 
   def read_file
     tasks = []
+
     CSV.foreach @file, headers: true, header_converters: :symbol do |row|
       task = row.to_h
       task[:done] = task[:done] == 'true' if task.key? :done
@@ -73,17 +84,27 @@ class CSVFile
     end
 
     tasks
+  rescue Errno::ENOENT
+    raise TodoFileReadError.new("Unable to open #{@file} file. No such file.")
+  rescue Errno::EACCES
+    raise TodoFileReadError.new("Unable to read #{@file} file. No permissions.")
+  rescue CSV::MalformedCSVError
+    raise TodoFileReadError.new("CSV malformed on #{@file} file.")
   end
 
-  def write_file(_data)
-    headers = tasks.first&.keys
+  def write_file(data)
+    headers = data.first&.keys
     return if headers.nil?
 
     CSV.open @file, 'w', write_headers: true, headers: headers do |csv|
-      tasks.each do |task|
+      data.each do |task|
         csv << headers.map { |header| task[header] }
       end
     end
+  rescue Errno::ENOENT
+    raise TodoFileReadError.new("Unable to open #{@file} file. No such file.")
+  rescue Errno::EACCES
+    raise TodoFileReadError.new("Unable to read #{@file} file. No permissions.")
   end
 end
 
@@ -99,6 +120,15 @@ class MockFile
   def write_file(data)
     @file = data
   end
+end
+
+class TodoError < StandardError
+end
+
+class TodoFileReadError < TodoError
+end
+
+class TodoFileWriteError < TodoError
 end
 
 # new_file = MockFile.new([

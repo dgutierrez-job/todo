@@ -8,76 +8,80 @@ class TodoCLI < Thor
   def list
     puts todo.list_tasks.to_json
   end
+rescue TodoFileReadError => e
+  puts "ERROR: #{e.message}"
+end
 
-  desc 'find', 'Find task by ID'
-  def find(id)
-    task = todo.find_task id
+desc 'find', 'Find task by ID'
+def find(id)
+  task = todo.find_task id
 
-    return if task.nil?
+  return if task.nil?
 
-    puts task.to_json
+  puts task.to_json
+rescue TodoFileReadError => e
+  puts "ERROR: #{e.message}"
+end
+
+desc 'delete', 'Delete task by ID'
+def delete(id)
+  task = todo.delete_task id
+
+  return if task.nil?
+
+  puts task.to_json
+rescue TodoFileReadError => e
+  puts "ERROR: #{e.message}"
+end
+
+desc 'create TITLE', 'Create task with TITLE'
+option :done, type: :boolean
+option :undone, type: :boolean
+option :description
+
+def create(title)
+  new_options = options.transform_keys(&:to_sym)
+  new_options.delete :undone if new_options[:undone]
+  task = todo.create_task(title, **new_options)
+  puts task.to_json
+rescue TodoFileReadError => e
+  puts "ERROR: #{e.message}"
+rescue TodoError => e
+  puts "ERROR: #{e.message}"
+end
+
+desc 'edit ID', 'Edit task by ID'
+option :done, type: :boolean
+option :undone, type: :boolean
+option :title
+option :description
+def edit(id)
+  new_options = options.transform_keys(&:to_sym)
+  if new_options[:undone]
+    new_options.delete :undone
+    new_options[:done] = false
+  end
+  task = todo.edit_task(id, **new_options)
+
+  return if task.nil?
+
+  puts task.to_json
+rescue TodoFileReadError => e
+  puts "ERROR: #{e.message}"
+end
+
+no_commands do
+  def todo
+    @todo ||= Todo.new storage
   end
 
-  desc 'delete', 'Delete task by ID'
-  def delete(id)
-    task = todo.delete_task id
-
-    return if task.nil?
-
-    puts task.to_json
-  end
-
-  desc 'create TITLE', 'Create task with TITLE'
-  option :done, type: :boolean
-  option :undone, type: :boolean
-  option :description
-
-  def create(title)
-    new_options = options.transform_keys(&:to_sym)
-    new_options.delete :undone if new_options[:undone]
-    task = todo.create_task(title, **new_options)
-    puts task.to_json
-  end
-
-  desc 'edit ID', 'Edit task by ID'
-  option :done, type: :boolean
-  option :undone, type: :boolean
-  option :title
-  option :description
-  def edit(id)
-    new_options = options.transform_keys(&:to_sym)
-    if new_options[:undone]
-      new_options.delete :undone
-      new_options[:done] = false
-    end
-    task = todo.edit_task(id, **new_options)
-
-    return if task.nil?
-
-    puts task.to_json
-  end
-
-  no_commands do
-    def todo
-      @todo ||= Todo.new storage
-    end
-
-    def storage
-      @storage ||= MockFile.new([
-        {
-          id: '0',
-          title: 'wake up',
-          description: 'just open your eyes and start the day',
-          done: true,
-        },
-        {
-          id: '1',
-          title: 'prepare coffe and drink it',
-          description: 'we need some energy to start the day',
-          done: false,
-        },
-      ])
-    end
+  def storage
+    # @storage ||= JSONFile.new 'añskfñosajfkas.json'
+    # @storage ||= JSONFile.new 'tasks_sample.json'
+    @storage ||= JSONFile.new 'tasks.json'
+    # @storage || = CSVFile.new 'asfsafsfaa.csv'
+    # @storage ||= CSVFile.new 'tasks.csv'
+    # @storage ||= CSVFile.new 'tasks_sample.csv'
   end
 end
 

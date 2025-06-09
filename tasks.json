@@ -1,0 +1,62 @@
+[
+  {
+    "id": "102bfe74-5e9e-48e9-9e23-7fdb5aeaa4ab",
+    "title": "wake up",
+    "description": "just open your eyes and start the day",
+    "done": true
+  },
+  {
+    "id": "8b000d1b-375f-4bf1-9189-faf14266c09d",
+    "title": "prepare coffe and drink it",
+    "description": "we need some energy to start the day",
+    "done": true
+  },
+  {
+    "id": "cad862ae-f362-4956-80a3-618f3eb996e8",
+    "title": "get a bath",
+    "description": "clean yourself",
+    "done": true
+  },
+  {
+    "id": "520619fd-b381-4942-95b1-51b13980e80a",
+    "title": "make progress on the tesis",
+    "description": "we need to finish this thing, pls:(  )",
+    "done": true
+  },
+  {
+    "id": "7327807d-5737-4d7c-8fe1-f78382661d01",
+    "title": "semillero-time",
+    "description": "hacking time",
+    "done": true
+  },
+  {
+    "id": "6a98ee8d-0c06-450e-9249-d36b06eddc3b",
+    "title": "have breakfast/meal",
+    "description": "yes, my first meal of the day is at 2pm",
+    "done": true
+  },
+  {
+    "id": "82c088ac-5aac-4c06-a279-4ac9998f1d45",
+    "title": "play some ps5",
+    "description": "I play some gacha-games, so i need to do daylies",
+    "done": true
+  },
+  {
+    "id": "201380b2-ad49-4cc0-baf4-35d2acdd733e",
+    "title": "go to the gym",
+    "description": "i like climbing rocks (kinda) ",
+    "done": true
+  },
+  {
+    "id": "a9cf94eb-0f55-40c8-8888-9d2be6830798",
+    "title": "return home and have a shower",
+    "description": "right know i'm destroy, help",
+    "done": true
+  },
+  {
+    "id": "b5c8752b-a595-4abe-9245-5c935ffdcfb7",
+    "title": "go to bed",
+    "description": "insomnia, here we GOOOOOOOOOOO!!!!!!",
+    "done": true
+  }
+]
