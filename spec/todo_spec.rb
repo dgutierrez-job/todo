@@ -1,7 +1,7 @@
 RSpec.describe Todo do
   let(:todo) { Todo }
   let :file do
-    MockFile.new([
+    MemoryStorage.new([
       {
         id: '0',
         title: 'wake up',
@@ -19,17 +19,17 @@ RSpec.describe Todo do
   end
   let(:tasks) { todo.new file }
 
-  describe '.list_tasks ' do
-    let(:result) { tasks.list_tasks }
+  describe '.list' do
+    let(:result) { tasks.list }
 
     it 'returns a list of tasks' do
       expect(result).to all(be_a(Hash))
     end
   end
 
-  describe '.find_task' do
+  describe '.find' do
     let(:id) { '1' }
-    let(:result) { tasks.find_task id }
+    let(:result) { tasks.find id }
     it 'finds the desired task' do
       expect(result).to be_a(Hash)
       expect(result[:id]).to eq(id)
@@ -44,9 +44,9 @@ RSpec.describe Todo do
     end
   end
 
-  describe '.delete_task' do
+  describe '.delete' do
     let(:id) { '1' }
-    let(:result) { tasks.delete_task id }
+    let(:result) { tasks.delete id }
 
     it 'deletes a desired task' do
       expect(result).to be_a(Hash)
@@ -62,12 +62,12 @@ RSpec.describe Todo do
     end
   end
 
-  describe '.create_task' do
+  describe '.create' do
     let(:title) { 'programar' }
     let(:attributes) { { done: true, description: 'un dia mas' } }
     # let(:description) { 'un dia mas ' }
     # let(:status) { true }
-    let(:result) { tasks.create_task(title, **attributes) }
+    let(:result) { tasks.create(title, **attributes) }
 
     it 'creates a new task' do
       expect(result).to be_a(Hash)
@@ -76,10 +76,10 @@ RSpec.describe Todo do
     end
   end
 
-  describe '.edit_task' do
+  describe '.edit' do
     let(:id) { '0' }
     let(:attributes) { { title: 'jugar', description: 'un día chill', done: false } }
-    let(:result) { tasks.edit_task(id, **attributes) }
+    let(:result) { tasks.edit(id, **attributes) }
 
     it 'edit an existing task' do
       expect(result).to be_a(Hash)
@@ -97,5 +97,46 @@ RSpec.describe Todo do
         expect(result).to be_nil
       end
     end
+  end
+end
+
+RSpec.describe JSONStorage do
+  let(:JSONStorage) { JSONStorage }
+
+  describe '.read' do
+    let(:file) { JSONStorage.new 'tasks.json' }
+    let(:result) { file.read }
+    it 'reads a desired file' do
+      expect(result).to be_a(Array)
+    end
+
+    # context 'With invalid file' do
+    #   let(:file) { JSONStorage.new 'sdasd.json' }
+    #   let(:result) { file.read }
+    #
+    #   it 'Return and exception' do
+    #     expect(result).to be_a(Exception)
+    #   end
+    # end
+  end
+
+  describe '.write' do
+    let(:file) { JSONStorage.new 'task2.json' }
+    let(:data) { [{ id: '12', title: 'un titulo', done: true }] }
+    let(:update) { (file.write data) }
+    let(:result) { file.read }
+    it 'writes a desired file' do
+      update
+      expect(result).to eq(data)
+    end
+
+    # context 'with invalid file' do
+    #   let(:file) { jsonstorage.new 'aksdflahsfk.json' }
+    #   let(:result) { file.write data }
+    #
+    #   it 'return and exception' do
+    #     expect(result).to be_a(todoerror)
+    #   end
+    # end
   end
 end

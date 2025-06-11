@@ -7,50 +7,50 @@ class Todo
     @tasks = tasks
   end
 
-  def list_tasks
-    @tasks.read_file
+  def list
+    @tasks.read
   end
 
-  def find_task(id)
-    list_tasks.find { |task| task[:id] == id }
+  def find(id)
+    list.find { |task| task[:id] == id }
   end
 
-  def delete_task(id)
-    data = list_tasks
-    task_to_delete = find_task id
+  def delete(id)
+    data = list
+    task_to_delete = find id
     data.delete task_to_delete
-    @tasks.write_file data
+    @tasks.write data
     task_to_delete
   end
 
-  def create_task(title, **attributes)
+  def create(title, **attributes)
     raise TodoError.new('Title is required') if !title.is_a?(String) || title.empty?
 
-    data = list_tasks
+    data = list
 
     new_task = { done: false }.merge(attributes).merge({ id: SecureRandom.uuid, title: title })
     data.push new_task
-    @tasks.write_file data
+    @tasks.write data
     new_task
   end
 
-  def edit_task(id, **attributes)
-    data = list_tasks
-    task_to_edit = find_task id
+  def edit(id, **attributes)
+    data = list
+    task_to_edit = find id
     return unless task_to_edit
 
     data[data.index(task_to_edit)] = task_to_edit.merge attributes
-    @tasks.write_file data
+    @tasks.write data
     task_to_edit.merge attributes
   end
 end
 
-class JSONFile
+class JSONStorage
   def initialize(file)
     @file = file
   end
 
-  def read_file
+  def read
     JSON.parse(File.read(@file), { symbolize_names: true })
   rescue Errno::ENOENT
     raise TodoFileReadError.new("Unable to open #{@file} file. No such file.")
@@ -58,9 +58,11 @@ class JSONFile
     raise TodoFileReadError.new("Unable to read #{@file}. No permissions.")
   rescue JSON::ParserError
     raise TodoFileReadError.new("JSON malformed on #{@file} file")
+  rescue StandardError => e
+    raise TodoError.new("Unexpected error: #{e.message}")
   end
 
-  def write_file(data)
+  def write(data)
     File.write @file, JSON.generate(data)
   rescue Errno::ENOENT
     raise TodoFileReadError.new("Unable to open #{@file} file. No such file.")
@@ -69,12 +71,12 @@ class JSONFile
   end
 end
 
-class CSVFile
+class CSVStorage
   def initialize(file)
     @file = file
   end
 
-  def read_file
+  def read
     tasks = []
 
     CSV.foreach @file, headers: true, header_converters: :symbol do |row|
@@ -85,14 +87,14 @@ class CSVFile
 
     tasks
   rescue Errno::ENOENT
-    raise TodoFileReadError.new("Unable to open #{@file} file. No such file.")
+    raise TodoFileReadError.new("No such file: #{@file}.")
   rescue Errno::EACCES
-    raise TodoFileReadError.new("Unable to read #{@file} file. No permissions.")
+    raise TodoFileReadError.new("No permissions: #{@file} ")
   rescue CSV::MalformedCSVError
-    raise TodoFileReadError.new("CSV malformed on #{@file} file.")
+    raise TodoFileReadError.new("Malformed CSV: #{@file}.")
   end
 
-  def write_file(data)
+  def write(data)
     headers = data.first&.keys
     return if headers.nil?
 
@@ -108,16 +110,16 @@ class CSVFile
   end
 end
 
-class MockFile
+class MemoryStorage
   def initialize(file = [])
     @file = file || []
   end
 
-  def read_file
+  def read
     @file
   end
 
-  def write_file(data)
+  def write(data)
     @file = data
   end
 end
