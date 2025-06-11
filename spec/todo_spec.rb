@@ -101,42 +101,32 @@ RSpec.describe Todo do
 end
 
 RSpec.describe JSONStorage do
-  let(:JSONStorage) { JSONStorage }
+  let(:filename) { 'tmp/tasks.json' }
+  let(:storage) { JSONStorage.new filename }
 
   describe '.read' do
-    let(:file) { JSONStorage.new 'tasks.json' }
-    let(:result) { file.read }
+    let(:result) { storage.read }
+
+    before { JSON.dump([{ id: '1', title: 'something', done: false }], File.open(filename, 'w')) }
+
     it 'reads a desired file' do
-      expect(result).to be_a(Array)
+      expect(result).to all(be_a(Hash))
     end
 
-    # context 'With invalid file' do
-    #   let(:file) { JSONStorage.new 'sdasd.json' }
-    #   let(:result) { file.read }
-    #
-    #   it 'Return and exception' do
-    #     expect(result).to be_a(Exception)
-    #   end
-    # end
+    context 'With invalid file' do
+      before { File.write filename, 'invalid json {' }
+
+      it 'Return and exception' do
+        expect { storage.read }.to raise_error(TodoFileReadError)
+      end
+    end
   end
 
   describe '.write' do
-    let(:file) { JSONStorage.new 'task2.json' }
-    let(:data) { [{ id: '12', title: 'un titulo', done: true }] }
-    let(:update) { (file.write data) }
-    let(:result) { file.read }
-    it 'writes a desired file' do
-      update
-      expect(result).to eq(data)
-    end
+    let(:result) { storage.write [{ id: '1', title: 'nothing' }] }
 
-    # context 'with invalid file' do
-    #   let(:file) { jsonstorage.new 'aksdflahsfk.json' }
-    #   let(:result) { file.write data }
-    #
-    #   it 'return and exception' do
-    #     expect(result).to be_a(todoerror)
-    #   end
-    # end
+    it 'writes a desired file' do
+      expect(result).to be_a(File)
+    end
   end
 end

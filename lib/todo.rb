@@ -63,7 +63,7 @@ class JSONStorage
   end
 
   def write(data)
-    File.write @file, JSON.generate(data)
+    JSON.dump data, File.open(@file, 'w')
   rescue Errno::ENOENT
     raise TodoFileReadError.new("Unable to open #{@file} file. No such file.")
   rescue Errno::EACCES
