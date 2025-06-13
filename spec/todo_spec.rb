@@ -116,7 +116,7 @@ RSpec.describe JSONStorage do
     context 'With invalid file' do
       before { File.write filename, 'invalid json {' }
 
-      it 'Return and exception' do
+      it 'Return an exception' do
         expect { storage.read }.to raise_error(TodoFileReadError)
       end
     end
@@ -127,6 +127,35 @@ RSpec.describe JSONStorage do
 
     it 'writes a desired file' do
       expect(result).to be_a(File)
+    end
+  end
+end
+
+RSpec.describe CSVStorage do
+  let(:filename) { 'tmp/tasks.csv' }
+  let(:storage) { CSVStorage.new filename }
+
+  describe '.read' do
+    let(:result) { storage.read }
+
+    it 'reads a desired file' do
+      expect(result).to all(be_a(Hash))
+    end
+
+    context 'With invalid file' do
+      before { File.write filename, 'a mal formed csv' }
+
+      it 'Return an exception' do
+        expect { storage.read }.to raise_error(TodoFileReadError)
+      end
+    end
+  end
+
+  describe '.write' do
+    let(:result) { storage.write [{ id: '1', title: 'nothing' }] }
+
+    it 'writes a desired file' do
+      expect(result).to all(be_a(Hash))
     end
   end
 end
