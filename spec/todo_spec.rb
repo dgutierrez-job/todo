@@ -1,7 +1,7 @@
 RSpec.describe Todo do
   let(:todo) { Todo }
   let :file do
-    MemoryStorage.new([
+    Todo::Storage::MemoryStorage.new([
       {
         id: '0',
         title: 'wake up',
@@ -30,6 +30,7 @@ RSpec.describe Todo do
   describe '.find' do
     let(:id) { '1' }
     let(:result) { tasks.find id }
+
     it 'finds the desired task' do
       expect(result).to be_a(Hash)
       expect(result[:id]).to eq(id)

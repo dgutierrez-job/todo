@@ -6,8 +6,10 @@ require_relative '../lib/todo'
 class TodoCLI < Thor
   desc 'list', 'List all tasks '
   def list
-    puts todo.list.to_json
-  rescue TodoFileReadError => e
+    todo.list.map do |task|
+      puts task.to_json
+    end
+  rescue Todo::TodoError => e
     puts "ERROR: #{e.message}"
   end
 
@@ -17,68 +19,82 @@ class TodoCLI < Thor
 
     return if task.nil?
 
-    puts task.to_json
-  rescue TodoFileReadError => e
+    puts task.to_json 
+
+  rescue Todo::TodoError => e
     puts "ERROR: #{e.message}"
   end
 
   desc 'delete', 'Delete task by ID'
   def delete(id)
-    task = todo.delete id
+    task = todo.find id
 
     return if task.nil?
 
-    puts task.to_json
-  rescue TodoFileReadError => e
+    puts todo.delete(id).to_json
+  rescue Todo::TodoError => e
     puts "ERROR: #{e.message}"
   end
 
   desc 'create TITLE', 'Create task with TITLE'
   option :done, type: :boolean
   option :undone, type: :boolean
-  option :description
+  option :description, desc: 'task description'
+  option :deadline
 
   def create(title)
     new_options = options.transform_keys(&:to_sym)
     new_options.delete :undone if new_options[:undone]
     task = todo.create(title, **new_options)
     puts task.to_json
-  rescue TodoError => e
+  rescue Todo::TodoError => e
     puts "ERROR: #{e.message}"
   end
 
-  desc 'edit ID', 'Edit task by ID'
+  desc 'update ID', 'Update task by ID'
   option :done, type: :boolean
   option :undone, type: :boolean
-  option :title
   option :description
-  def edit(id)
+  option :deadline
+
+  def update(id, tittle)
     new_options = options.transform_keys(&:to_sym)
+
     if new_options[:undone]
       new_options.delete :undone
       new_options[:done] = false
     end
-    task = todo.edit(id, **new_options)
+
+    task = todo.find id
 
     return if task.nil?
 
+    task = todo.update(id, tittle, **new_options)
+
     puts task.to_json
-  rescue TodoFileReadError => e
+  rescue Todo::TodoError => e
     puts "ERROR: #{e.message}"
   end
 
   no_commands do
     def todo
-      @todo ||= Todo.new storage
+      @todo ||= Todo.new username
+    rescue Todo::InvalidUsernameError => e
+      response = ask "Username not found (#{username}), should I create it?[Y/n]"
+
+      raise e unless ['y', 'Y', ''].include? response
+
+      @todo = Todo.new username, force: true
     end
 
-    def storage
-      @storage ||= JSONStorage.new 'añskfñosajfkas.json'
-      # @storage ||= JSONStorage.new 'tasks_sample.json'
-      # @storage ||= JSONFile.new 'tasks.json'
-      # @storage || = CSVFile.new 'asfsafsfaa.csv'
-      # @storage ||= CSVFile.new 'tasks.csv'
-      # @storage ||= CSVFile.new 'tasks_sample.csv'
+    def username
+      return @username unless @username.nil?
+
+      username = ENV.fetch 'TODO_USERNAME', nil
+
+      raise Todo::TodoError.new('Please set TODO_USERNAME env variable') if username.nil? || username.empty?
+
+      @username = username
     end
   end
 end

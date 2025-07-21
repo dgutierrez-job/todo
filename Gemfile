@@ -7,3 +7,7 @@ gem 'rspec'
 gem 'simplecov', '~> 0.22.0'
 
 gem "thor", "~> 1.3"
+
+gem "sequel", "~> 5.94"
+
+gem "pg", "~> 1.5"

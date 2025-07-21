@@ -5,4 +5,5 @@ require_relative '../lib/todo'
 # puts Todo.list_tasks
 # Todo.find_task '201380b2-ad49-4cc0-baf4-35d2acdd733e'
 # Todo.delete_task 'cad862ae-f362-4956-80a3-618f3eb996e8'
-Todo.create_task '12345', 'hola', 'desription', true
+require 'pry'
+binding.pry
