@@ -41,13 +41,43 @@ class Todo
     LIST_TASKS = <<~SQL
       SELECT *
       FROM tasks
-      WHERE deleted_at is NULL AND user_id = :user_id;
+      WHERE deleted_at IS NULL 
+      AND user_id = :user_id
     SQL
 
-    def list_tasks(user_id)
-      records = db.fetch(LIST_TASKS, { user_id: user_id }).all
+    def list_tasks(user_id, filters = {})
 
-      records.map { |record| Todo::Entities::Task.new record }
+      conditions = []
+
+      tittle, done, start_deadline, end_deadline = filters.values_at(
+        :tittle,
+        :done,
+        :start_deadline,
+        :end_deadline
+      )
+
+      conditions << 'tittle LIKE :tittle' unless tittle.nil?
+
+      conditions << 'done = :done ' unless done.nil?
+
+      if start_deadline && end_deadline 
+        conditions << 'deadline >= :start_deadline AND deadline < :end_deadline'
+      elsif start_deadline
+        conditions << 'deadline >= :start_deadline'
+      elsif end_deadline
+        conditions << 'deadline < :end_deadline'
+      end
+
+      query = LIST_TASKS
+
+      conditions.each do |condition|
+        query = "#{query} AND #{condition}"
+      end
+
+      db.fetch(query, filters.merge({ user_id: user_id })).all.map do |task|
+        Todo::Entities::Task.new task
+      end
+
     end
 
     FIND_TASKS_BY_ID = <<~SQL

@@ -23,8 +23,10 @@ class Todo
     @user = repository.create_user username
   end
 
-  def list
-    repository.list_tasks(user.id)
+  def list(filters={})
+     
+    repository.list_tasks(user.id, filters)
+
   end
 
   def find(id)
@@ -36,9 +38,9 @@ class Todo
   end
 
   def create(tittle, **options)
-    raise TodoError.new('Title is required') if !tittle.is_a?(String) || tittle.empty?
+    raise todoerror.new('title is required') if !tittle.is_a?(String) || tittle.empty?
     
-    options  = options.merge({tittle: tittle, user_id: user.id})
+    options  = options.merge({ user_id: user.id })
 
     repository.create_task({
       tittle: options[:tittle],
@@ -54,11 +56,10 @@ class Todo
   
     task = repository.find_task_by_id(id)
 
-    options = options.merge({ tittle: tittle, id: id })
 
     repository.update_task_by_id({
-      id: options[:id],
-      tittle: options[:tittle],
+      id: id,
+      tittle: tittle,
       description: options.fetch(:description, task.description),
       deadline: options.fetch(:deadline, task.deadline),
       done: options.fetch(:done, task.done)
