@@ -15,12 +15,17 @@ class Todo
 
   def initialize(username, force: false)
     @user = repository.find_user_by_username username
-
+    
     return unless user.nil?
 
     raise Todo::InvalidUsernameError.new("Username not found") unless force
+    
+    if user.nil?
+      @user = repository.create_user username
+    else 
+      raise Todo::InvalidUsernameError.new("Username alredy in use: #{user}")
+    end
 
-    @user = repository.create_user username
   end
 
   def list(filters={})
@@ -38,7 +43,7 @@ class Todo
   end
 
   def create(tittle, **options)
-    raise todoerror.new('title is required') if !tittle.is_a?(String) || tittle.empty?
+    raise Todoerror.new('title is required') if !tittle.is_a?(String) || tittle.empty?
     
     options  = options.merge({ user_id: user.id })
 
